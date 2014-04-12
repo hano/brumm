@@ -108,7 +108,8 @@ var Brumm = (function() {
     var gridWidth = 45;
     var grid = null;
     var intervalID = null;
-    var distance = 0;
+    var distance = null;
+    var record = 0;
 
     var initializeGrid = function() {
 
@@ -180,8 +181,15 @@ var Brumm = (function() {
 
     var gameOver = function(){
         clearInterval(intervalID);
+        clearLine(29);
         clearLine(30);
-        console.log('Game Over! To restart press s');
+        console.log('Game Over! To restart press s.');
+        if(distance > record){
+            record = distance;
+            console.log('New Record! ' + record + ' lines.');
+        } else {
+            console.log('You travelled ' + distance + ' lines. Record is ' + record + ' lines.');
+        }
         return false;
     };
 
@@ -202,6 +210,7 @@ var Brumm = (function() {
 
     var _start = function() {
         grid = [];
+        distance = 0;
         car = new Car();
         initializeGrid();
         drawGrid();
