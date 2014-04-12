@@ -3,7 +3,7 @@ var colors = require('colors');
 var Car = function() {
 };
 Car.prototype.posX = 20;
-Car.prototype.posY = 1;
+Car.prototype.posY = 25;
 Car.prototype.form = 'x';
 Car.prototype.color = 1;
 Car.prototype.COLORS = {
@@ -23,7 +23,14 @@ Car.prototype.getColor = function() {
 Car.prototype._damage = 0
 
 Car.prototype.brake = function( strength ) {
-    this.posY -= strength;
+    this.posY -= Math.abs(strength);
+    if(this.posY < 0){
+        this.posY = 0;
+    }
+};
+
+Car.prototype.accelerate = function( strength ) {
+    this.posY += Math.abs(strength);
     if(this.posY < 0){
         this.posY = 0;
     }
@@ -31,7 +38,7 @@ Car.prototype.brake = function( strength ) {
 
 Car.prototype.damage = function() {
     this._damage += 1;
-    if( this._damage % 10 !== 0 ) {
+    if( this._damage % 20 !== 0 ) {
         return;
     }
     this.brake(1);
@@ -102,6 +109,8 @@ var Brumm = (function() {
     var car = null;
     var border = '[]'.yellow;
     var asphalt = '-'.grey;
+    var boost = '0'.yellow;
+    var obstacle = ' '.redBG;
     var dust = '-'.grey;
     var gras = '#'.green;
     var lastAsphaltCount = 20;
@@ -118,8 +127,24 @@ var Brumm = (function() {
         }
     };
 
+    var addBoost = function(){
+        if(distance > 9 && distance % 4 === 0){
+            return true;
+        }
+        return false;
+    };
+
+    var addObstacle = function(){
+        if(distance > 9 && distance % 4 === 0){
+            return true;
+        }
+        return false;
+    };
+
     var drawLine = function( line ) {
         var output = [];
+        var boostPos = Math.floor(Math.random() * lastAsphaltCount) + 0;
+        var obstaclePos = Math.floor(Math.random() * lastAsphaltCount) + 0;
         for( var a = 0; a <= lastAsphaltCount; a++ ) {
             output.push(gras);
         }
@@ -130,9 +155,16 @@ var Brumm = (function() {
         }
 
         output.push(border);
+
         for( var a = 0; a <= lastAsphaltCount; a++ ) {
             if( a === car.posX && line && line === car.posY ) {
                 output.push(car.draw());
+            } else if(addBoost() && a === boostPos){
+                output.push(boost);
+                boostPos = null;
+            } else if(addObstacle() && a === obstaclePos){
+                output.push(obstacle);
+                obstaclePos = null;
             } else {
                 output.push(asphalt);
             }
@@ -153,10 +185,23 @@ var Brumm = (function() {
 
     };
 
+    var setCarBoundary = function(){
+        if(car.posY >= grid.length ){
+            car.posY = grid.length - 2;
+        } else if(car.posY <= 0){
+            car.posY = 0;
+        }
+        if(car.posX >= gridWidth){
+            car.posX = gridWidth;
+        } else if(car.posX <= 0){
+            car.posX = 0;
+        }
+    };
+
     var draw = function() {
         grid.shift();
-        //var lastPos = grid[car.posY-1].join('').indexOf(car.form);
         var dustPosY = car.posY - 1 >= 0 ? car.posY - 1 : 0;
+        setCarBoundary();
         grid[dustPosY][car.posX - 1] = dust.black;
         grid[dustPosY][car.posX + 1] = dust.black;
         grid[dustPosY][car.posX] = dust.black;
@@ -165,8 +210,14 @@ var Brumm = (function() {
         grid[0][0] = 'Distance: ' + distance + ' Damage: ' + car._damage;
 
         if( grid[car.posY][car.posX] === gras ) {
+            car.damage(true);
+        } else if(grid[car.posY][car.posX] === boost){
+            car.accelerate(1);
+        } else if(grid[car.posY][car.posX] === obstacle){
             car.damage();
+            car.brake(1);
         }
+        setCarBoundary();
         grid[car.posY][car.posX] = car.draw();
         grid.push(drawLine());
         drawGrid();
@@ -174,16 +225,20 @@ var Brumm = (function() {
 
     var ruleCheck = function(){
         if(car.posY <= 0){
-            return gameOver();
+            return gameOver('Not fast enough!');
+        } else if(car._damage > 100){
+            return gameOver('Look at your car! It\'s damaged!');
         }
         return true;
     };
 
-    var gameOver = function(){
+    var gameOver = function(reason){
         clearInterval(intervalID);
+        clearLine(28);
         clearLine(29);
         clearLine(30);
-        console.log('Game Over! To restart press s.');
+        console.log('Game Over! ' + reason);
+        console.log('To restart press s.');
         if(distance > record){
             record = distance;
             console.log('New Record! ' + record + ' lines.');
@@ -209,9 +264,12 @@ var Brumm = (function() {
     };
 
     var _start = function() {
+        clearInterval(intervalID);
         grid = [];
         distance = 0;
         car = new Car();
+        car.posY = 15;
+        car.posX = 20;
         initializeGrid();
         drawGrid();
 
