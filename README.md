@@ -9,7 +9,7 @@ Brumm is a command line game for node.js.
 
 ## Install
 ```
-git clone
+git clone https://github.com/hano/brumm.git
 cd brumm
 npm install
 ```
