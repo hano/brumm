@@ -1,5 +1,5 @@
 # Brumm
-Brumm is a commandline game for node.js.
+Brumm is a command line game for node.js.
 
 ![Brumm in action](brumm.png)
 
