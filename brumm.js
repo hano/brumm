@@ -65,7 +65,7 @@ Car.prototype.draw = function() {
     if( this.getColor() === this.COLORS.WHITE ) {
         return this.form.white;
     } else if( this.getColor() === this.COLORS.BLUE ) {
-        return this.form.blue;
+        return this.form.cyan;
     } else if( this.getColor() === this.COLORS.YELLOW ) {
         return this.form.yellow;
     } else if( this.getColor() === this.COLORS.RED ) {
@@ -119,6 +119,7 @@ var Brumm = (function() {
     var intervalID = null;
     var distance = null;
     var record = 0;
+    var gameOverDamage = 100;
 
     var initializeGrid = function() {
 
@@ -226,7 +227,7 @@ var Brumm = (function() {
     var ruleCheck = function(){
         if(car.posY <= 0){
             return gameOver('Not fast enough!');
-        } else if(car._damage > 100){
+        } else if(car._damage > gameOverDamage){
             return gameOver('Look at your car! It\'s damaged!');
         }
         return true;
@@ -258,7 +259,7 @@ var Brumm = (function() {
 
         for( var i = 0; i < grid.length; i++ ) {
             var lineCount = i < 10 ? '0' + i : i;
-            var line = lineCount + ' ' + grid[i].join('');
+            var line = /*lineCount + ' ' +*/ grid[i].join('');
             console.log(line);
         }
     };
@@ -283,9 +284,12 @@ var Brumm = (function() {
 
 
     return{
-        start: _start
+        start: _start,
+        gameOverDamage: gameOverDamage
     };
 })();
 
 //Brumm.start();
-console.log('press s to start. Control your car with n and m.');
+console.log('Press s to start.\nControl your car with n and m.\nAvoid getting hit by red obstacles.\nTo gain boost collect the yellow 0.');
+console.log('You slow down and damage your car when driving in the green gras.');
+console.log('It\'s game over if your car has more than ' + Brumm.gameOverDamage + ' damage or is to slow.');
